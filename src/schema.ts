@@ -1,52 +1,36 @@
 import { EntitySchema, Collection } from '@mikro-orm/core';
 
-// Base class for all entities
-export class BaseEntity {
+// A piece of Content can belong to many Archives
+export class Content {
   id!: number;
   name!: string;
   type!: string;
-  
-  // Reference to containing ParentEntity
-  parent?: ParentEntity;
 
-  // Many-to-many relationship with MidEntities
-  mids = new Collection<MidEntity>(this);
+  archives = new Collection<Archive>(this);
 }
 
-// MidEntity extends BaseEntity and can have many BaseEntities
-export class MidEntity extends BaseEntity {
-  // Collection of BaseEntities that belong to this mid
-  items = new Collection<BaseEntity>(this);
-
-  // Optional parent mid
-  parentMid?: MidEntity;
-  
-  // Child mids
-  childMids = new Collection<MidEntity>(this);
+// An Archive contains many items of Content, and can also be treated as Content itself
+export class Archive extends Content {
+  items = new Collection<Content>(this);
 }
 
-// ParentEntity extends MidEntity
-export class ParentEntity extends MidEntity {
-  elements = new Collection<BaseEntity>(this);
+// Video Archive
+export class VideoArchive extends Archive {
+  studioName?: string;
 }
 
-export class BossEntity extends ParentEntity {
-  description?: string;
-}
 
-// Base schema with STI support
-export const BaseSchema = new EntitySchema<BaseEntity>({
-  class: BaseEntity,
+export const ContentSchema = new EntitySchema<Content>({
+  class: Content,
   discriminatorColumn: 'type',
-  discriminatorValue: 'base',
+  discriminatorValue: 'content',
   properties: {
     id: { type: 'number', primary: true },
     name: { type: 'string' },
     type: { type: 'string' },
-    parent: { kind: 'm:1', entity: () => 'ParentEntity', nullable: true },
-    mids: {
+    archives: {
       kind: 'm:n',
-      entity: () => 'MidEntity',
+      entity: () => 'Archive',
       mappedBy: 'items',
       owner: false
     }
@@ -54,51 +38,28 @@ export const BaseSchema = new EntitySchema<BaseEntity>({
 }); 
 
 // MidEntity schema extending BaseSchema
-export const MidSchema = new EntitySchema<MidEntity, BaseEntity>({
-  class: MidEntity,
-  extends: BaseSchema,
-  discriminatorValue: 'mid',
+export const ArchiveSchema = new EntitySchema<Archive, Content>({
+  class: Archive,
+  extends: ContentSchema,
+  discriminatorValue: 'archive',
   properties: {
     items: {
       kind: 'm:n',
-      entity: () => 'BaseEntity',
+      entity: () => 'Content',
       owner: true,
-      pivotTable: 'base_entity_mid',
-      joinColumn: 'mid_id',
-      inverseJoinColumn: 'base_entity_id'
-    },
-    parentMid: { 
-      kind: 'm:1', 
-      entity: () => 'MidEntity', 
-      nullable: true 
-    },
-    childMids: {
-      kind: '1:m',
-      entity: () => 'MidEntity',
-      mappedBy: 'parentMid'
+      pivotTable: 'content_archive',
+      joinColumn: 'archive_id',
+      inverseJoinColumn: 'content_id'
     }
   }
 });
 
 // ParentEntity schema extending MidSchema
-export const ParentSchema = new EntitySchema<ParentEntity, MidEntity>({
-  class: ParentEntity,
-  extends: MidSchema,
-  discriminatorValue: 'parent',
+export const VideoArchiveSchema = new EntitySchema<VideoArchive, Archive>({
+  class: VideoArchive,
+  extends: ArchiveSchema,
+  discriminatorValue: 'videoArchive',
   properties: {
-    elements: {
-      kind: '1:m',
-      entity: () => 'BaseEntity',
-      mappedBy: 'parent'
-    }
-  }
-});
-
-export const BossSchema = new EntitySchema<BossEntity, ParentEntity>({
-  class: BossEntity,
-  extends: ParentSchema,
-  discriminatorValue: 'boss',
-  properties: {
-    description: { type: 'string' },
+    studioName: { type: 'string' },
   }
 });

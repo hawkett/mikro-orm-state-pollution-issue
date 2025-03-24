@@ -1,18 +1,16 @@
 {
-  "name": "@mikro-orm/reproduction",
+  "name": "@mikro-orm/",
   "private": true,
   "description": "",
   "scripts": {
     "build": "tsc",
     "start": "jest",
-    "test": "jest src/demo-issue.test.ts",
-    "test:state": "jest src/state-pollution.test.ts"
+    "test": "jest src/state-pollution.test.ts"
   },
   "author": "Colin Hawkett",
   "dependencies": {
-    "@mikro-orm/core": "next",
-    "@mikro-orm/reflection": "next",
-    "@mikro-orm/sqlite": "next"
+    "@mikro-orm/core": "6.4.11",
+    "@mikro-orm/sqlite": "6.4.11"
   },
   "devDependencies": {
     "@types/jest": "^29.5.14",
