@@ -1,6 +1,6 @@
 # Overview
 
-Reproduction for: 
+Reproduction for: https://github.com/mikro-orm/mikro-orm/issues/6540
 
 `state-pollution.test.ts` contains a single test that attempts to open and close 2 orm instances, with the second instance crashing.
 
